@@ -46,8 +46,6 @@ class FacebookPoster():
         #       https://developers.facebook.com/docs/pages/access-tokens
         self.page_access_token = self.get_page_access_token()
 
-        print(self.page_access_token)
-
     def file_is_valid(self, filename):
         """Checks if the storage file exists and has information. Returns a Boolean"""
 
