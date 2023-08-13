@@ -44,7 +44,11 @@ class FacebookPoster():
         #       This token is valid forever
         #       Can also get all the tokens for pages you manage by using the user id:
         #       https://developers.facebook.com/docs/pages/access-tokens
+        # self.page_access_token = os.getenv("PAGE_ACCESS_TOKEN")
         self.page_access_token = self.get_page_access_token()
+
+        # - Generate the post and publish it as a Photo.
+        #       This is done so that it appears as a normal post but with the photo.
 
     def file_is_valid(self, filename):
         """Checks if the storage file exists and has information. Returns a Boolean"""
@@ -58,6 +62,14 @@ class FacebookPoster():
         """Makes a GET request and returns a formatted response content."""
 
         response = requests.get(url)
+        content = json.loads(response.content)
+
+        return content
+
+    def make_post_request(self, url):
+        """Makes a POST request and returns a formatted response content."""
+
+        response = requests.post(url)
         content = json.loads(response.content)
 
         return content
@@ -126,16 +138,19 @@ class FacebookPoster():
             with open(storage_file,"r") as file:
                 page_access_token = file.readline().strip()
             
+
             return page_access_token
 
-        url = f"https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={self.app_id}&client_secret={self.app_secret}&fb_exchange_token={self.long_access_token}"
+        url = f"https://graph.facebook.com/{self.page_id}?fields=access_token&access_token={self.long_access_token}"
         
         content = self.make_get_request(url)
+
+        print(content)
 
         try:
             access_token = content['access_token']
 
-            with open(storage_file, "a+") as file:
+            with open(storage_file, "w") as file:
                 file.write(access_token)
         except KeyError:
             error = content['error']['message']
@@ -145,6 +160,57 @@ class FacebookPoster():
 
         return access_token
 
+    def get_image(self):
+        """Retrieves the URL for the image to be uploaded."""
+
+        image_url = input("Input the URL of the image for the post: ")
+
+        return image_url
+
+    def generate_post(self):
+        """Generates a post"""
+
+        caption = "Hello images world from rebuild!"
+
+        image = self.get_image()
+
+        post_data = {
+            'caption': caption,
+            'image_url': image,
+        }
+
+        return post_data
+
+    def publish_post(self, post):
+        """Publishes the post to FB."""
+
+        url = f"https://graph.facebook.com/{self.page_id}/photos?url={post['image_url']}&access_token={self.page_access_token}&caption={post['caption']}"
+
+        content = self.make_post_request(url)
+
+        return content
+
+    def publish_text_post(self):
+        """Publishes a text post to the feed."""
+
+        message = "Hello testing endpoint for text!"
+
+        url = f"https://graph.facebook.com/{self.page_id}/feed?message={message}&access_token={self.page_access_token}"
+
+        content = self.make_post_request(url)
+
+        print(content)
+
+    def posting_process(self):
+        """Generates a post with an image and posts it to facebook."""
+
+        post = self.generate_post()
+
+        id_post = self.publish_post(post)
+
+        print(id_post)
+
 
 if __name__ == '__main__':
     fb_poster = FacebookPoster()
+    fb_poster.posting_process()
