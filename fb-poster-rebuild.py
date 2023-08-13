@@ -91,11 +91,16 @@ class FacebookPoster():
     def get_page_id(self):
         """Gets the Page ID."""
 
-        url = f"https://graph.facebook.com/{self.user_id}/accounts?access_token={self.long_access_token}"
+        # WIP: It's not returning the info for the page I want to access.
 
-        content = self.make_get_request(url)
+        # url = f"https://graph.facebook.com/{self.user_id}/accounts?access_token={self.long_access_token}"
 
-        page_id = content["data"][0]["id"]
+        # content = self.make_get_request(url)
+
+        # page_id = content["data"][0]["id"]
+
+        # Hardcoding the ID from the correct page, it's in the About section.
+        page_id = '100896348004530'
 
         return page_id
 
