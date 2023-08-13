@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 class FacebookPoster():
     """Creates a Post and publishes it to a Facebook page."""
 
-    def __init__(self, app_name, app_id, user_id, user_access_token, app_secret):
+    def __init__(self):
         """Generates all necessary IDs and tokens necessary for posting."""
 
         load_dotenv()
@@ -34,6 +34,11 @@ class FacebookPoster():
         # - Get the Long-lived User Access Token
         #       Is valid for 60 days
         self.long_access_token = self.get_long_lived_user_access_token()
+
+        # - Get the Page ID.
+        #       Can be retrieved from the About section of the FB page
+        #       https://www.facebook.com/help/1503421039731588
+        self.page_id = self.get_page_id()
 
 
     def make_get_request(self, url):
@@ -82,6 +87,17 @@ class FacebookPoster():
             file.write(content['access_token'] + "\n")
 
         return content['access_token']
+
+    def get_page_id(self):
+        """Gets the Page ID."""
+
+        url = f"https://graph.facebook.com/{self.user_id}/accounts?access_token={self.long_access_token}"
+
+        content = self.make_get_request(url)
+
+        page_id = content["data"][0]["id"]
+
+        return page_id
 
 if __name__ == '__main__':
     fb_poster = FacebookPoster()
