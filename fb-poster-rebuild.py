@@ -40,6 +40,21 @@ class FacebookPoster():
         #       https://www.facebook.com/help/1503421039731588
         self.page_id = self.get_page_id()
 
+        # - Get the Page Access Token
+        #       This token is valid forever
+        #       Can also get all the tokens for pages you manage by using the user id:
+        #       https://developers.facebook.com/docs/pages/access-tokens
+        self.page_access_token = self.get_page_access_token()
+
+        print(self.page_access_token)
+
+    def file_is_valid(self, filename):
+        """Checks if the storage file exists and has information. Returns a Boolean"""
+
+        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+            return True
+        else:
+            return False
 
     def make_get_request(self, url):
         """Makes a GET request and returns a formatted response content."""
@@ -60,7 +75,7 @@ class FacebookPoster():
         # the date at which it was generated.
         # If the access token is still valid, it's returned.
         # If it isn't, a new one is generated and subsequently stored.
-        if os.path.exists(storage_file) and os.path.getsize(storage_file) > 0:
+        if self.file_is_valid(storage_file):
             with open(storage_file, "r") as file:
                 date_token = file.readline().strip()
                 access_token = file.readline().strip()
@@ -103,6 +118,35 @@ class FacebookPoster():
         page_id = '100896348004530'
 
         return page_id
+
+    def get_page_access_token(self):
+        """Gets the permanent page access token."""
+
+        storage_file = 'permanent_page_access_token.txt'
+
+        if self.file_is_valid(storage_file):
+            with open(storage_file,"r") as file:
+                page_access_token = file.readline().strip()
+            
+            return page_access_token
+
+        url = f"https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={self.app_id}&client_secret={self.app_secret}&fb_exchange_token={self.long_access_token}"
+        
+        content = self.make_get_request(url)
+
+        try:
+            access_token = content['access_token']
+
+            with open(storage_file, "a+") as file:
+                file.write(access_token)
+        except KeyError:
+            error = content['error']['message']
+
+            print(error)
+            exit()
+
+        return access_token
+
 
 if __name__ == '__main__':
     fb_poster = FacebookPoster()
